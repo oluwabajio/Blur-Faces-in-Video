@@ -33,7 +33,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import org.opencv.android.OpenCVLoader;
+import org.bytedeco.javacpp.Loader;
+
+//import org.opencv.android.OpenCVLoader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,13 +43,14 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private static final String TAG = "MainActivity";
 
-    static {
-        if (OpenCVLoader.initDebug()) {
-            Log.e(TAG, "OpenCV initialize success");
-        } else {
-            Log.e(TAG, "OpenCV initialize failed");
-        }
-    }
+//    static {
+//        if (OpenCVLoader.initDebug()) {
+//            Log.e(TAG, "OpenCV initialize success");
+//        } else {
+//            Log.e(TAG, "OpenCV initialize failed");
+//        }
+//    }
+
 
     private int PERMISSION_REQUEST_CODE = 333;
 
@@ -57,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        Loader.load(org.bytedeco.opencv.opencv_java.class);
+
 
         setSupportActionBar(binding.toolbar);
 
