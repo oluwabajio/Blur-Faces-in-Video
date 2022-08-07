@@ -111,6 +111,7 @@ public class HomeFragment extends Fragment {
 
         binding.btnSelectVideo.setOnClickListener(v -> {
             selectVideo();
+//            NavHostFragment.findNavController(HomeFragment.this).navigate(R.id.videoFragment);
 
         });
 

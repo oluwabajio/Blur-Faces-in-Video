@@ -62,11 +62,13 @@ dependencies {
     //implementation 'org.bytedeco:javacpp-presets:1.5.7'
 
 
-        implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-arm'
+//    implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4'
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-arm'
     implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-x86'
     implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-arm64'
     implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-x86_64'
 
+//    implementation group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '4.1-1.4.4'
     implementation group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '4.1-1.4.4', classifier: 'android-arm'
     implementation group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '4.1-1.4.4', classifier: 'android-x86'
     implementation group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '4.1-1.4.4', classifier: 'android-arm64'
