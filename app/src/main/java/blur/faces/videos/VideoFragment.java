@@ -1,6 +1,9 @@
 package blur.faces.videos;
 
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_AAC;
+import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
 import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_MPEG4;
+import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_YUV420P;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 
@@ -89,9 +92,9 @@ public class VideoFragment extends Fragment {
         CascadeClassifier cascadeClassifier = setupCascadeClassifier();
 
         try {
-        //    InputStream inputStream = getActivity().getContentResolver().openInputStream(sharedViewModel.getSelectedVideoUri().getValue());
+            //    InputStream inputStream = getActivity().getContentResolver().openInputStream(sharedViewModel.getSelectedVideoUri().getValue());
 
-          InputStream  istr = getActivity().getAssets().open("face.mp4");
+            InputStream istr = getActivity().getAssets().open("face3.mp4");
 //
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(istr);
             grabber.start();
@@ -100,12 +103,12 @@ public class VideoFragment extends Fragment {
 //            grabber.start();
 
 
-          //  File output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "akt.avi");
-//            FileOutputStream fileout = new FileOutputStream(output.getAbsolutePath());
+      File output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "akt.mp4");
+
 
             OutputStream outputStream = getFileOutputStream();
-
-            FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(outputStream, grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
+        //    FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(outputStream, grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
+            FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(output.getAbsolutePath(), grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
             OpenCVFrameConverter converter = new OpenCVFrameConverter() {
                 @Override
                 public Frame convert(Object o) {
@@ -123,30 +126,13 @@ public class VideoFragment extends Fragment {
             recorder.setVideoCodec(AV_CODEC_ID_MPEG4);
             //recorder.setVideoBitrate(10 * 1024 * 1024);
             recorder.setFrameRate(24.0);
-//            recorder.setVideoQuality(0);
+            recorder.setVideoQuality(0);
             recorder.setAudioChannels(2);
             recorder.setSampleRate(grabber.getSampleRate());
-//            recorder.setFormat("mp4");
-            recorder.setFormat("matroska");
+            recorder.setFormat("mp4");
+            recorder.setAudioCodec(AV_CODEC_ID_AAC);
+            recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
             recorder.start();
-//
-//
-//            recorder.setInterleaved(true);
-//            recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);
-//            recorder.setFormat("matroska");
-//            recorder.setVideoQuality(0);
-//            System.out.println("音视频合成比特率：" + grabber.getVideoBitrate());
-//            recorder.setVideoBitrate(grabber.getVideoBitrate());
-//            recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P); // yuv420p
-//            int frameRate = 30;
-//            recorder.setFrameRate(grabber.getFrameRate());
-//            recorder.setGopSize(frameRate * 2);
-//            recorder.setAudioOption("crf", "0");
-//            recorder.setAudioQuality(0);// 最高质量
-//            recorder.setAudioCodec(avcodec.AV_CODEC_ID_AAC);
-//            recorder.setAudioChannels(2);
-//            recorder.setSampleRate(44100);
-         //   recorder.start();
 
             Frame frame = null;
             try {
@@ -158,47 +144,42 @@ public class VideoFragment extends Fragment {
                     Log.e(TAG, "frame--->" + frame + "frame.image---->" + frame.image);
 //
                     if (frame == null) break;
-                    if (frame.image == null) continue;
+                    if (frame.image == null) {
+                        recorder.record(frame);
+                        continue;
+                    }
 
-//                    org.bytedeco.javacpp.opencv_core.Mat matImaage = converter.convertToMat(frame);
-//                    Bitmap bitmapImage = androidFrameConverter.convert(frame);
 
-                    org.bytedeco.javacpp.opencv_core.Mat src = converter.convertToMat(frame);
-                    org.bytedeco.javacpp.opencv_core.Mat greyScaledImage = new org.bytedeco.javacpp.opencv_core.Mat();
-                    //Converting the image to grey scale
-                    cvtColor(src, greyScaledImage, Imgproc.COLOR_RGB2GRAY);
 
-                    equalizeHist(greyScaledImage, greyScaledImage);
+                    Mat srcMat = converter.convertToOrgOpenCvCoreMat(frame);
+                    Mat greyscaledMat = new Mat();
+
+                    Imgproc.cvtColor(srcMat, greyscaledMat, Imgproc.COLOR_RGB2GRAY);
+                    Imgproc.equalizeHist(greyscaledMat, greyscaledMat);
 
                     if (this.absoluteFaceSize == 0) {
-                        int height = greyScaledImage.rows();
+                        int height = greyscaledMat.rows();
                         if (Math.round(height * 0.2f) > 0) {
                             this.absoluteFaceSize = Math.round(height * 0.2f);
                         }
                     }
 
 
-                    Mat greyScaledImageMat = converter.convertToOrgOpenCvCoreMat(converter.convert(greyScaledImage));
-                    Mat srcMat = converter.convertToOrgOpenCvCoreMat(converter.convert(src));
-
-
                     MatOfRect faces = new MatOfRect();
-                    cascadeClassifier.detectMultiScale(greyScaledImageMat, faces, 1.1, 2, 0 | Objdetect.CASCADE_SCALE_IMAGE,
+                    cascadeClassifier.detectMultiScale(greyscaledMat, faces, 1.1, 2, 0 | Objdetect.CASCADE_SCALE_IMAGE,
                             new Size(this.absoluteFaceSize, this.absoluteFaceSize), new Size());
 
                     Rect[] facesArray = faces.toArray();
                     Log.e(TAG, "processOpencv: Detected faces = " + facesArray.length);
                     for (int i = 0; i < facesArray.length; i++) {
 
-                        Mat imageROI = new Mat(greyScaledImageMat, facesArray[i]);
-
+                        Mat imageROI = new Mat(greyscaledMat, facesArray[i]);
                         Mat mask = srcMat.submat(facesArray[i]);
                         Imgproc.GaussianBlur(mask, mask, new Size(55, 55), 55); // or any other processing
 
                     }
 
 
-                    //  frame = converter.convert(greyScaledImage);
                     frame = converter.convert(srcMat);
 
 
@@ -269,58 +250,59 @@ public class VideoFragment extends Fragment {
 
         }
     }
-        private void dismissProgressDialog () {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    dismissLoadingDialog();
-                }
-            });
+
+    private void dismissProgressDialog() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    private CascadeClassifier setupCascadeClassifier() {
+        InputStream is = getResources().openRawResource(R.raw.haarcascade);
+        File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
+        File mCascadeFile = new File(cascadeDir, "cascade.xml");
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(mCascadeFile);
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+            is.close();
+            os.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        private CascadeClassifier setupCascadeClassifier () {
-            InputStream is = getResources().openRawResource(R.raw.haarcascade);
-            File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
-            File mCascadeFile = new File(cascadeDir, "cascade.xml");
-            FileOutputStream os = null;
-            try {
-                os = new FileOutputStream(mCascadeFile);
-
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    os.write(buffer, 0, bytesRead);
-                }
-                is.close();
-                os.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            // We can "cast" Pointer objects by instantiating a new object of the desired class.
-            cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-            if (cascadeClassifier == null) {
-                System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
-                System.exit(1);
-                Log.e(TAG, "processOpencv: Error loading file");
-                Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
-            }
-            return cascadeClassifier;
+        // We can "cast" Pointer objects by instantiating a new object of the desired class.
+        cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+        if (cascadeClassifier == null) {
+            System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
+            System.exit(1);
+            Log.e(TAG, "processOpencv: Error loading file");
+            Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
         }
+        return cascadeClassifier;
+    }
 
-        private void dismissLoadingDialog () {
-            if (isAdded() && progressDialog != null) {
-                progressDialog.dismiss();
-            }
-        }
-
-        private void initProgressDialog () {
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setMessage("Please Wait..."); // Setting Message
-            progressDialog.setTitle("Handwriting To Text"); // Setting Title
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
-            progressDialog.show(); // Display Progress Dialog
-            progressDialog.setCancelable(false);
-
+    private void dismissLoadingDialog() {
+        if (isAdded() && progressDialog != null) {
+            progressDialog.dismiss();
         }
     }
+
+    private void initProgressDialog() {
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setMessage("Please Wait..."); // Setting Message
+        progressDialog.setTitle("Handwriting To Text"); // Setting Title
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
+        progressDialog.show(); // Display Progress Dialog
+        progressDialog.setCancelable(false);
+
+    }
+}
