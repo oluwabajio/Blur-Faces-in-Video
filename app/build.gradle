@@ -28,6 +28,17 @@ android {
     buildFeatures {
         viewBinding true
     }
+
+    packagingOptions {
+        pickFirst  'META-INF/native-image/android-arm/jnijavacpp/reflect-config.json'
+        pickFirst  'META-INF/native-image/android-arm64/jnijavacpp/jni-config.json'
+        pickFirst  'META-INF/native-image/android-arm64/jnijavacpp/reflect-config.json'
+        pickFirst  'META-INF/native-image/android-x86_64/jnijavacpp/reflect-config.json'
+        pickFirst  'META-INF/native-image/android-x86/jnijavacpp/jni-config.json'
+        pickFirst  'META-INF/native-image/android-x86_64/jnijavacpp/jni-config.json'
+        pickFirst  'META-INF/native-image/android-arm/jnijavacpp/jni-config.json'
+        pickFirst  'META-INF/native-image/android-x86/jnijavacpp/reflect-config.json'
+    }
 }
 
 dependencies {
@@ -53,7 +64,8 @@ dependencies {
 //    implementation 'org.bytedeco.javacpp-presets:ffmpeg:4.1-1.4.4'
 
 
-    implementation 'org.bytedeco:javacv:1.4.4'
+    implementation 'org.bytedeco:javacv:1.5.3'
+//    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.7'
 //    implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.5.7', classifier: 'android-arm'
 //    implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.5.7', classifier: 'android-x86'
 //
@@ -62,14 +74,16 @@ dependencies {
     //implementation 'org.bytedeco:javacpp-presets:1.5.7'
 
 
-        implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-arm'
-    implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-x86'
-    implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-arm64'
-    implementation group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '4.0.1-1.4.4', classifier: 'android-x86_64'
+//        implementation group: 'org.bytedeco', name: 'opencv', version: '4.3.0-1.5.3'
+        implementation group: 'org.bytedeco', name: 'opencv', version: '4.3.0-1.5.3', classifier: 'android-arm'
+    implementation group: 'org.bytedeco', name: 'opencv', version: '4.3.0-1.5.3', classifier: 'android-x86'
+    implementation group: 'org.bytedeco', name: 'opencv', version: '4.3.0-1.5.3', classifier: 'android-arm64'
+    implementation group: 'org.bytedeco', name: 'opencv', version: '4.3.0-1.5.3', classifier: 'android-x86_64'
 
-    implementation group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '4.1-1.4.4', classifier: 'android-arm'
-    implementation group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '4.1-1.4.4', classifier: 'android-x86'
-    implementation group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '4.1-1.4.4', classifier: 'android-arm64'
-    implementation group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '4.1-1.4.4', classifier: 'android-x86_64'
+  //  implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.2.2-1.5.3'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.2.2-1.5.3', classifier: 'android-arm'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.2.2-1.5.3', classifier: 'android-x86'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.2.2-1.5.3', classifier: 'android-arm64'
+    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.2.2-1.5.3', classifier: 'android-x86_64'
 
 }

@@ -1,11 +1,10 @@
 package blur.faces.videos;
 
-import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_AAC;
-import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
-import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_MPEG4;
-import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_YUV420P;
-import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
-import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
+import static org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_AAC;
+import static org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_MPEG4;
+import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P;
+import static org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_MPEG4;
+import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P;
 
 import android.app.ProgressDialog;
 import android.content.ContentValues;
@@ -27,8 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import org.bytedeco.javacpp.avcodec;
-import org.bytedeco.javacpp.avutil;
+
 import org.bytedeco.javacv.AndroidFrameConverter;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
@@ -129,7 +127,7 @@ public class VideoFragment extends Fragment {
             recorder.setVideoQuality(0);
             recorder.setAudioChannels(2);
             recorder.setSampleRate(grabber.getSampleRate());
-            recorder.setFormat("mp4");
+            recorder.setFormat("matroska");
             recorder.setAudioCodec(AV_CODEC_ID_AAC);
             recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
             recorder.start();
@@ -299,10 +297,32 @@ public class VideoFragment extends Fragment {
     private void initProgressDialog() {
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("Please Wait..."); // Setting Message
-        progressDialog.setTitle("Handwriting To Text"); // Setting Title
+        progressDialog.setTitle("Blur Faces in Video"); // Setting Title
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
         progressDialog.show(); // Display Progress Dialog
         progressDialog.setCancelable(false);
 
     }
+
+
+//Use seekablebytearray
+//    @Test
+//    public void testVideoBytesEqual() {
+//        // if this test fails it might be due to indeterministic multithreaded encoding
+//        System.out.println("SeekableByteArrayOutputStreamVideo");
+//        File tempFile = new File(Loader.getTempDir(), "test.mp4");
+//        try {
+//            createVideo(new FFmpegFrameRecorder(tempFile, WIDTH, HEIGHT, 0));
+//            byte[] fileBytes = Files.readAllBytes(tempFile.toPath());
+//
+//            SeekableByteArrayOutputStream byteArrayOutputStream = new SeekableByteArrayOutputStream();
+//            createVideo(new FFmpegFrameRecorder(byteArrayOutputStream, WIDTH, HEIGHT, 0));
+//            assertArrayEquals(fileBytes, byteArrayOutputStream.toByteArray());
+//        } catch (Exception e) {
+//            fail("Exception should not have been thrown: " + e);
+//        } finally {
+//            tempFile.delete();
+//        }
+//    }
+
 }
