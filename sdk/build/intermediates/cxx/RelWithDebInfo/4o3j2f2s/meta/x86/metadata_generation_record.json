@@ -1,0 +1,170 @@
+[
+  {
+    "level_": 0,
+    "message_": "Start JSON generation. Platform version: 21 min SDK version: x86",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -366557342
+  },
+  {
+    "level_": 0,
+    "message_": "rebuilding JSON C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\.cxx\\RelWithDebInfo\\4o3j2f2s\\x86\\android_gradle_build.json due to:",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 1881944825
+  },
+  {
+    "level_": 0,
+    "message_": "- expected json C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\.cxx\\RelWithDebInfo\\4o3j2f2s\\x86\\android_gradle_build.json file is not present, will remove stale json folder",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -965795797
+  },
+  {
+    "level_": 0,
+    "message_": "- missing previous command file C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\.cxx\\RelWithDebInfo\\4o3j2f2s\\x86\\metadata_generation_command.txt, will remove stale json folder",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -1554498263
+  },
+  {
+    "level_": 0,
+    "message_": "- command changed from previous, will remove stale json folder",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 2094572286
+  },
+  {
+    "level_": 0,
+    "message_": "created folder \u0027C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\.cxx\\RelWithDebInfo\\4o3j2f2s\\x86\u0027",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -1836827173
+  },
+  {
+    "level_": 0,
+    "message_": "executing cmake Executable : C:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\cmake\\3.18.1\\bin\\cmake.exe\narguments : \n-HC:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\n-DCMAKE_SYSTEM_NAME\u003dAndroid\n-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON\n-DCMAKE_SYSTEM_VERSION\u003d21\n-DANDROID_PLATFORM\u003dandroid-21\n-DANDROID_ABI\u003dx86\n-DCMAKE_ANDROID_ARCH_ABI\u003dx86\n-DANDROID_NDK\u003dC:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\n-DCMAKE_ANDROID_NDK\u003dC:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\n-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\\build\\cmake\\android.toolchain.cmake\n-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\cmake\\3.18.1\\bin\\ninja.exe\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dC:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\build\\intermediates\\cxx\\RelWithDebInfo\\4o3j2f2s\\obj\\x86\n-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003dC:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\build\\intermediates\\cxx\\RelWithDebInfo\\4o3j2f2s\\obj\\x86\n-DCMAKE_BUILD_TYPE\u003dRelWithDebInfo\n-BC:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\.cxx\\RelWithDebInfo\\4o3j2f2s\\x86\n-GNinja\n-DANDROID_STL\u003dc++_shared\njvmArgs : \n\n",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -1296998499
+  },
+  {
+    "level_": 0,
+    "message_": "Executable : C:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\cmake\\3.18.1\\bin\\cmake.exe\narguments : \n-HC:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\n-DCMAKE_SYSTEM_NAME\u003dAndroid\n-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON\n-DCMAKE_SYSTEM_VERSION\u003d21\n-DANDROID_PLATFORM\u003dandroid-21\n-DANDROID_ABI\u003dx86\n-DCMAKE_ANDROID_ARCH_ABI\u003dx86\n-DANDROID_NDK\u003dC:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\n-DCMAKE_ANDROID_NDK\u003dC:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\n-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\\build\\cmake\\android.toolchain.cmake\n-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\oluwa\\AppData\\Local\\Android\\Sdk\\cmake\\3.18.1\\bin\\ninja.exe\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dC:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\build\\intermediates\\cxx\\RelWithDebInfo\\4o3j2f2s\\obj\\x86\n-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003dC:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\build\\intermediates\\cxx\\RelWithDebInfo\\4o3j2f2s\\obj\\x86\n-DCMAKE_BUILD_TYPE\u003dRelWithDebInfo\n-BC:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\.cxx\\RelWithDebInfo\\4o3j2f2s\\x86\n-GNinja\n-DANDROID_STL\u003dc++_shared\njvmArgs : \n\n",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 220539676
+  },
+  {
+    "level_": 0,
+    "message_": "Exiting generation of C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\.cxx\\RelWithDebInfo\\4o3j2f2s\\x86\\compile_commands.json.bin normally",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 1326630417
+  },
+  {
+    "level_": 0,
+    "message_": "done executing cmake",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 1782226035
+  },
+  {
+    "level_": 0,
+    "message_": "write command file C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\.cxx\\RelWithDebInfo\\4o3j2f2s\\x86\\metadata_generation_command.txt",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 1315470851
+  },
+  {
+    "level_": 0,
+    "message_": "JSON generation completed without problems",
+    "file_": "C:\\Users\\oluwa\\AndroidStudioProjects\\BlurFacesinViideos\\sdk\\libcxx_helper\\CMakeLists.txt",
+    "tag_": "release|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -574668177
+  }
+]
