@@ -30,6 +30,7 @@ import android.widget.Toast;
 import org.bytedeco.javacv.AndroidFrameConverter;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.FFmpegLogCallback;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.opencv.core.Mat;
@@ -46,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -92,16 +94,20 @@ public class VideoFragment extends Fragment {
         try {
             //    InputStream inputStream = getActivity().getContentResolver().openInputStream(sharedViewModel.getSelectedVideoUri().getValue());
 
-            InputStream istr = getActivity().getAssets().open("face3.mp4");
-//
-            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(istr);
+            FFmpegLogCallback.set();
+
+            File input = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "face3.mp4");
+            File output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "akt.mp4");
+
+
+            InputStream istr = getActivity().getAssets().open("face.avi");
+            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(input.getAbsolutePath());
             grabber.start();
 
 //            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(inputStream);
 //            grabber.start();
 
 
-      File output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "akt.mp4");
 
 
             OutputStream outputStream = getFileOutputStream();

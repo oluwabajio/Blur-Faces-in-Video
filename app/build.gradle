@@ -86,4 +86,10 @@ dependencies {
     implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.2.2-1.5.3', classifier: 'android-arm64'
     implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.2.2-1.5.3', classifier: 'android-x86_64'
 
+
+    implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.9-1.5.3', classifier: 'android-arm'
+    implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.9-1.5.3', classifier: 'android-x86'
+    implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.9-1.5.3', classifier: 'android-arm64'
+    implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.9-1.5.3', classifier: 'android-x86_64'
+
 }
