@@ -30,5 +30,10 @@
         android:name="blur.faces.videos.TestFragment"
         android:label="fragment_test"
         tools:layout="@layout/fragment_test" />
+    <fragment
+        android:id="@+id/camera2Fragment"
+        android:name="blur.faces.videos.CameraSFragment"
+        android:label="fragment_camera2"
+        tools:layout="@layout/fragment_camera_s" />
 
 </navigation>

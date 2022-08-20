@@ -1,7 +1,6 @@
 package blur.faces.videos;
 
 
-
 import static org.opencv.core.CvType.CV_8UC1;
 
 import static blur.faces.videos.utils.AppUtils.setupCascadeClassifier;
@@ -34,8 +33,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 
-
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -60,7 +57,7 @@ public class HomeFragment extends Fragment {
     private int PICK_VIDEO = 783;
     SharedViewModel sharedViewModel;
     private static final int REQUEST_CODE_PERMISSION = 101;
-    private static final String[] REQUIRED_PERMISSIONS = new String[] {
+    private static final String[] REQUIRED_PERMISSIONS = new String[]{
             Manifest.permission.CAMERA
     };
 
@@ -90,11 +87,11 @@ public class HomeFragment extends Fragment {
 
         });
 
-        binding.btnCamera.setOnClickListener( v-> {
-            if(allPermissionGranted()) {
+        binding.btnCamera.setOnClickListener(v -> {
+            if (allPermissionGranted()) {
                 startCamera();
             } else {
-                requestPermissions( REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSION);
+                requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSION);
             }
         });
 
@@ -128,8 +125,6 @@ public class HomeFragment extends Fragment {
 
 
     }
-
-
 
 
     @Override
@@ -176,8 +171,8 @@ public class HomeFragment extends Fragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == REQUEST_CODE_PERMISSION) {
-            if(allPermissionGranted()) {
+        if (requestCode == REQUEST_CODE_PERMISSION) {
+            if (allPermissionGranted()) {
                 startCamera();
             } else {
                 Toast.makeText(getActivity(), "You must allow the camera permission to use the service.", Toast.LENGTH_SHORT).show();
@@ -187,13 +182,13 @@ public class HomeFragment extends Fragment {
     }
 
     private void startCamera() {
-//       NavHostFragment.findNavController(this).navigate(R.id.testFragment);
-   startActivity(new Intent(getActivity(), TestActivity.class));
+        NavHostFragment.findNavController(this).navigate(R.id.camera2Fragment);
+
     }
 
     private boolean allPermissionGranted() {
-        for(String permission : REQUIRED_PERMISSIONS) {
-            if(ContextCompat.checkSelfPermission(getActivity(), permission) != PackageManager.PERMISSION_GRANTED) {
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(getActivity(), permission) != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
         }

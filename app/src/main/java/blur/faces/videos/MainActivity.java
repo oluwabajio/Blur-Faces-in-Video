@@ -31,6 +31,8 @@ import blur.faces.videos.databinding.ActivityMainBinding;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.bytedeco.javacpp.Loader;
@@ -57,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    requestWindowFeature(Window.FEATURE_NO_TITLE);
+       getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -74,9 +79,9 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-//        if (!checkPermission()) {
-//            requestPermission();
-//        }
+        if (!checkPermission()) {
+            requestPermission();
+        }
 
 
     }
