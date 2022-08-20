@@ -70,19 +70,13 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
 
 
-        if (!checkPermission()) {
-            requestPermission();
-        }
+
+//        if (!checkPermission()) {
+//            requestPermission();
+//        }
 
 
     }
@@ -131,9 +125,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
 
         return super.onOptionsItemSelected(item);
     }

@@ -9,8 +9,8 @@ android {
         applicationId "blur.faces.videos"
         minSdk 21
         targetSdk 32
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName '1.2'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -121,8 +121,8 @@ dependencies {
         exclude group: 'org.bytedeco', module: 'tesseract'
         exclude group: 'org.bytedeco', module: 'videoinput'
         exclude group: 'org.bytedeco', module: 'artoolkitplus'
-        exclude group: 'org.bytedeco.javacpp-presets', module: 'opencv'
-        exclude group: 'org.bytedeco.javacpp-presets', module: 'opencv-platform'
+//        exclude group: 'org.bytedeco.javacpp-presets', module: 'opencv'
+//        exclude group: 'org.bytedeco.javacpp-presets', module: 'opencv-platform'
         exclude group: 'org.bytedeco.javacpp-presets', module: 'flycapture'
         exclude group: 'org.bytedeco.javacpp-presets', module: 'flycapture-platform'
         exclude group: 'org.bytedeco.javacpp-presets', module: 'libdc1394'
@@ -154,4 +154,18 @@ dependencies {
   implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.9-1.5.3', classifier: 'android-arm64'
     implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.9-1.5.3', classifier: 'android-x86_64'
 
+
+
+    def camerax_version = "1.1.0-beta01"
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-video:${camerax_version}"
+
+    implementation "androidx.camera:camera-view:${camerax_version}"
+    implementation "androidx.camera:camera-extensions:${camerax_version}"
+
+    implementation "com.google.mlkit:face-detection:16.1.5"
+
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
 }

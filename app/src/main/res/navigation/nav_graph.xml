@@ -13,11 +13,22 @@
     <fragment
         android:id="@+id/pictureFragment"
         android:name="blur.faces.videos.PictureFragment"
-        android:label="@string/second_fragment_label"
+        android:label="Blur Face In Picture"
         tools:layout="@layout/fragment_picture"/>
     <fragment
         android:id="@+id/videoFragment"
         android:name="blur.faces.videos.VideoFragment"
-        android:label="fragment_video"
+        android:label="Blur Face In Video"
         tools:layout="@layout/fragment_video" />
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="blur.faces.videos.CameraFragment"
+        android:label="fragment_camera"
+        tools:layout="@layout/fragment_camera" />
+    <fragment
+        android:id="@+id/testFragment"
+        android:name="blur.faces.videos.TestFragment"
+        android:label="fragment_test"
+        tools:layout="@layout/fragment_test" />
+
 </navigation>

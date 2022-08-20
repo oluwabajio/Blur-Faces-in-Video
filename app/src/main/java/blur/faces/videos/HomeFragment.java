@@ -6,9 +6,11 @@ import static org.opencv.core.CvType.CV_8UC1;
 
 import static blur.faces.videos.utils.AppUtils.setupCascadeClassifier;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -25,6 +27,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -55,6 +59,10 @@ public class HomeFragment extends Fragment {
     private int PICK_IMAGE = 567;
     private int PICK_VIDEO = 783;
     SharedViewModel sharedViewModel;
+    private static final int REQUEST_CODE_PERMISSION = 101;
+    private static final String[] REQUIRED_PERMISSIONS = new String[] {
+            Manifest.permission.CAMERA
+    };
 
     @Override
     public View onCreateView(
@@ -79,6 +87,14 @@ public class HomeFragment extends Fragment {
         binding.btnSelectVideo.setOnClickListener(v -> {
             selectVideo();
 
+        });
+
+        binding.btnCamera.setOnClickListener( v-> {
+            if(allPermissionGranted()) {
+                startCamera();
+            } else {
+                requestPermissions( REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSION);
+            }
         });
 
 
@@ -155,5 +171,33 @@ public class HomeFragment extends Fragment {
 
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == REQUEST_CODE_PERMISSION) {
+            if(allPermissionGranted()) {
+                startCamera();
+            } else {
+                Toast.makeText(getActivity(), "You must allow the camera permission to use the service.", Toast.LENGTH_SHORT).show();
+
+            }
+        }
+    }
+
+    private void startCamera() {
+//       NavHostFragment.findNavController(this).navigate(R.id.testFragment);
+   startActivity(new Intent(getActivity(), TestActivity.class));
+    }
+
+    private boolean allPermissionGranted() {
+        for(String permission : REQUIRED_PERMISSIONS) {
+            if(ContextCompat.checkSelfPermission(getActivity(), permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
 }

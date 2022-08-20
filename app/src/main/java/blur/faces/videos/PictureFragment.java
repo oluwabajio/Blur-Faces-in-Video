@@ -2,6 +2,8 @@ package blur.faces.videos;
 
 import static blur.faces.videos.utils.AppUtils.setupCascadeClassifier;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -53,6 +56,7 @@ public class PictureFragment extends Fragment {
     private int absoluteFaceSize = 0;
     SharedViewModel sharedViewModel;
     Uri imgUri;
+    private ProgressDialog progressDialog;
 
     @Override
     public View onCreateView(
@@ -63,7 +67,16 @@ public class PictureFragment extends Fragment {
         binding = FragmentPictureBinding.inflate(inflater, container, false);
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
-processOpencv();
+
+        initProgressDialog();
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                processOpencv();
+            }
+        });
+
+
 
 binding.btnOpen.setOnClickListener( v -> {
 
@@ -77,7 +90,29 @@ binding.btnOpen.setOnClickListener( v -> {
 
     }
 
+    private void initProgressDialog() {
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setMessage("Please Wait..."); // Setting Message
+        progressDialog.setTitle("Blur Faces in Picture"); // Setting Title
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
+        progressDialog.show(); // Display Progress Dialog
+        progressDialog.setCancelable(false);
 
+    }
+
+    private void dismissProgressDialog() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dismissLoadingDialog();
+            }
+        });
+    }
+    private void dismissLoadingDialog() {
+        if (isAdded() && progressDialog != null) {
+            progressDialog.dismiss();
+        }
+    }
 
     private void processOpencv() {
         CascadeClassifier cascadeClassifier = setupCascadeClassifier(getActivity());
@@ -105,8 +140,8 @@ binding.btnOpen.setOnClickListener( v -> {
 
         if (this.absoluteFaceSize == 0) {
             int height = greyScaledImage.rows();
-            if (Math.round(height * 0.2f) > 0) {
-                this.absoluteFaceSize = Math.round(height * 0.2f);
+            if (Math.round(height * 0.05f) > 0) {
+                this.absoluteFaceSize = Math.round(height * 0.05f);
             }
         }
 
@@ -122,20 +157,28 @@ binding.btnOpen.setOnClickListener( v -> {
             Mat imageROI = new Mat(greyScaledImage, facesArray[i]);
 
             Mat mask = src.submat(facesArray[i]);
-            Imgproc.GaussianBlur(mask, mask, new Size(55, 55), 55); // or any other processing
+            Imgproc.GaussianBlur(mask, mask, new Size(99, 99), 99); // or any other processing
 
         }
 
         Bitmap bmp = Bitmap.createBitmap(src.cols(), src.rows(), Bitmap.Config.ARGB_8888);
 
         Utils.matToBitmap(src, bmp);
-        binding.imgImage.setImageBitmap(bmp);
-        try {
-            saveImage(bmp);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                binding.imgImage.setImageBitmap(bmp);
+
+                try {
+                    saveImage(bmp);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+                dismissProgressDialog();
+            }
+        });
+
 
     }
 
@@ -165,7 +208,7 @@ binding.btnOpen.setOnClickListener( v -> {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
         Objects.requireNonNull(fos).close();
 
-        binding.imageSavedLocation.setText(imagesDir+name+".jpg");
+        binding.imageSavedLocation.setText("Image Saved Successfully to "+imagesDir+name+".jpg");
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
