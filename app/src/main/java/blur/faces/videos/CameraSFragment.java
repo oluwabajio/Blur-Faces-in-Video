@@ -478,7 +478,7 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         MatExpr blackImage = null;
         for (int i = 0; i < faces.size(); i++) {
 
-            org.bytedeco.opencv.opencv_core.Mat imageROI = new org.bytedeco.opencv.opencv_core.Mat(grayMat, faces.get(i));
+//            org.bytedeco.opencv.opencv_core.Mat imageROI = new org.bytedeco.opencv.opencv_core.Mat(grayMat, faces.get(i));
 
 
 
@@ -489,7 +489,22 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
 //            blackImage.asMat().copyTo(mat.apply(faces.get(i)).put(mat) );
 //            blackImage.asMat().copyTo(mat.apply(new Range(0, 20), new Range(0, 20)));
 //            mat.apply(new Range(273, 333), new Range(100, 160)).put(blackImage.asMat());
-            mat.copyTo(blackImage.asMat().apply(new Range(250, 750), new Range(250, 750)));
+//            mat.copyTo(blackImage.asMat().apply(new Range(250, 750), new Range(250, 750)));
+//            mat.copyTo(blackImage.asMat().apply(new Range(250, 750), new Range(250, 750)));
+
+
+
+
+
+
+            Mat imageROII = mat.apply(new org.bytedeco.opencv.opencv_core.Rect(faces.get(i).x(), faces.get(i).y(), faces.get(i).width(), faces.get(i).height()));
+            mat.copyTo(imageROII, mat);
+
+            Log.e(TAG, "detectFace3: hhhy" );
+
+
+
+
             //   Mat f = new Mat(new Rect(4,5,7,8));
            // blackImage.asMat().apply()
 //            org.bytedeco.opencv.opencv_core.Mat mask = mat.submat(faces.get(i));
