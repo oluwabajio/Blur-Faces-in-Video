@@ -33,7 +33,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import org.opencv.android.OpenCVLoader;
+import org.bytedeco.javacpp.Loader;
+
+//import org.opencv.android.OpenCVLoader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,13 +43,14 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private static final String TAG = "MainActivity";
 
-    static {
-        if (OpenCVLoader.initDebug()) {
-            Log.e(TAG, "OpenCV initialize success");
-        } else {
-            Log.e(TAG, "OpenCV initialize failed");
-        }
-    }
+//    static {
+//        if (OpenCVLoader.initDebug()) {
+//            Log.e(TAG, "OpenCV initialize success");
+//        } else {
+//            Log.e(TAG, "OpenCV initialize failed");
+//        }
+//    }
+
 
     private int PERMISSION_REQUEST_CODE = 333;
 
@@ -58,25 +61,22 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        Loader.load(org.bytedeco.opencv.opencv_java.class);
+
+
         setSupportActionBar(binding.toolbar);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
 
 
-        if (!checkPermission()) {
-            requestPermission();
-        }
+
+//        if (!checkPermission()) {
+//            requestPermission();
+//        }
 
 
     }
@@ -125,9 +125,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
 
         return super.onOptionsItemSelected(item);
     }

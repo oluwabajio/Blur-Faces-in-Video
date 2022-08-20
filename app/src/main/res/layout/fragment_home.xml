@@ -24,7 +24,7 @@
             android:textAlignment="center"
             android:textSize="18sp"
             android:layout_marginVertical="10dp"
-            android:text="You can blur pictures and videos with this app." />
+            android:text="You can blur faces in pictures and videos with this app." />
 
 
         <Button
@@ -39,6 +39,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Select Video"
+            android:paddingVertical="20dp"/>
+
+        <Button
+            android:id="@+id/btnCamera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Camera"
             android:paddingVertical="20dp"/>
 
     </LinearLayout>

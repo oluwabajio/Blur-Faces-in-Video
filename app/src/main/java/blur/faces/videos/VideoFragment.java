@@ -1,15 +1,16 @@
 package blur.faces.videos;
 
-import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_AAC;
-import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_H264;
-import static org.bytedeco.javacpp.avcodec.AV_CODEC_ID_MPEG4;
-import static org.bytedeco.javacpp.avutil.AV_PIX_FMT_YUV420P;
-import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
-import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
+import static org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_AAC;
+import static org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_MPEG4;
+import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P;
+import static org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_MPEG4;
+import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P;
+
 
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -25,15 +26,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.MediaController;
 import android.widget.Toast;
+import android.widget.VideoView;
 
-import org.bytedeco.javacpp.avcodec;
-import org.bytedeco.javacpp.avutil;
+
 import org.bytedeco.javacv.AndroidFrameConverter;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.FFmpegLogCallback;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
+
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
@@ -43,11 +47,13 @@ import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -65,6 +71,10 @@ public class VideoFragment extends Fragment {
     private static final String TAG = "VideoFragment";
     private int absoluteFaceSize = 0;
     SharedViewModel sharedViewModel;
+    private File output;
+    private File finall;
+    private String videoFileName;
+    private String path = "";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -73,12 +83,41 @@ public class VideoFragment extends Fragment {
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         startVideoOperation();
+        initListeners();
 
         return binding.getRoot();
     }
 
+    private void initListeners() {
+        binding.btnOpen.setOnClickListener(v -> playVideo());
+
+        binding.btnSave.setOnClickListener(v -> saveVideo());
+    }
+
+    private void saveVideo() {
+        try {
+            copy(new FileInputStream(output), getFileOutputStream());
+            Toast.makeText(getActivity(), "File Saved Successfully to " + path, Toast.LENGTH_SHORT).show();
+            binding.tvLocation.setText("File Saved Successfully to " + path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getActivity(), "Error Saving File", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void playVideo() {
+
+        Uri uri = Uri.parse(new File(path).getAbsolutePath());
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.setDataAndType(uri, "video/mp4");
+        startActivity(intent);
+    }
+
     private void startVideoOperation() {
-        //initProgressDialog();
+//        initProgressDialog();
+        binding.btnSave.setVisibility(View.GONE);
+        binding.videoView.setVisibility(View.GONE);
+        binding.lyProcessing.setVisibility(View.VISIBLE);
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -87,27 +126,77 @@ public class VideoFragment extends Fragment {
         });
     }
 
+
+    public static void copy(InputStream in, File dst) throws IOException {
+
+        try {
+            OutputStream out = new FileOutputStream(dst);
+            try {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
+        }
+    }
+
+    public static void copy(InputStream in, OutputStream out) throws IOException {
+
+        try {
+
+            try {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
+        }
+    }
+
     private void processVideo() {
+
 
         CascadeClassifier cascadeClassifier = setupCascadeClassifier();
 
         try {
-            //    InputStream inputStream = getActivity().getContentResolver().openInputStream(sharedViewModel.getSelectedVideoUri().getValue());
+            InputStream inputStream = getActivity().getContentResolver().openInputStream(sharedViewModel.getSelectedVideoUri().getValue());
 
-            InputStream istr = getActivity().getAssets().open("face3.mp4");
+//            FFmpegLogCallback.set();
 //
-            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(istr);
+
+
+//            InputStream inputStream = getActivity().getAssets().open("face3.mp4");
+
+            File folder = getActivity().getExternalFilesDir("BlurFace");
+            File copyFile = new File(folder, "file.mp4");
+            output = new File(folder, "output.mp4");
+
+            copy(inputStream, copyFile);
+
+
+            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(copyFile.getAbsolutePath());
+            grabber.setVideoOption("threads", "8");
+            grabber.setAudioOption("threads", "8");
+            grabber.setFrameRate(1);
             grabber.start();
 
-//            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(inputStream);
-//            grabber.start();
+            int frameCount = grabber.getLengthInFrames();
 
 
-      File output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "akt.mp4");
 
 
-            OutputStream outputStream = getFileOutputStream();
-        //    FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(outputStream, grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
             FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(output.getAbsolutePath(), grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
             OpenCVFrameConverter converter = new OpenCVFrameConverter() {
                 @Override
@@ -131,7 +220,7 @@ public class VideoFragment extends Fragment {
             recorder.setSampleRate(grabber.getSampleRate());
             recorder.setFormat("mp4");
             recorder.setAudioCodec(AV_CODEC_ID_AAC);
-            recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
+//            recorder.setPixelFormat(AV_PIX_FMT_YUV420P);
             recorder.start();
 
             Frame frame = null;
@@ -139,8 +228,10 @@ public class VideoFragment extends Fragment {
 
                 boolean isStart = true;
 
+                int noOfFrames = 0;
 
                 while (isStart && (frame = grabber.grabFrame()) != null) {
+
                     Log.e(TAG, "frame--->" + frame + "frame.image---->" + frame.image);
 //
                     if (frame == null) break;
@@ -148,8 +239,7 @@ public class VideoFragment extends Fragment {
                         recorder.record(frame);
                         continue;
                     }
-
-
+                    noOfFrames++;
 
                     Mat srcMat = converter.convertToOrgOpenCvCoreMat(frame);
                     Mat greyscaledMat = new Mat();
@@ -157,10 +247,11 @@ public class VideoFragment extends Fragment {
                     Imgproc.cvtColor(srcMat, greyscaledMat, Imgproc.COLOR_RGB2GRAY);
                     Imgproc.equalizeHist(greyscaledMat, greyscaledMat);
 
+
                     if (this.absoluteFaceSize == 0) {
                         int height = greyscaledMat.rows();
-                        if (Math.round(height * 0.2f) > 0) {
-                            this.absoluteFaceSize = Math.round(height * 0.2f);
+                        if (Math.round(height * 0.05f) > 0) {
+                            this.absoluteFaceSize = Math.round(height * 0.05f);
                         }
                     }
 
@@ -182,13 +273,31 @@ public class VideoFragment extends Fragment {
 
                     frame = converter.convert(srcMat);
 
+                    Frame finalFrame = frame;
 
+
+                    int finalNoOfFrames = noOfFrames;
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.e(TAG, "run: current frame = " + finalNoOfFrames + " total Frames " + frameCount);
+                            double percent = ((double)finalNoOfFrames / frameCount) * 100;
+                            double _percent = round(percent, 1);
+                            binding.tvProgress.setText("Processing \n" + _percent +"%");
+                            binding.imgImage.setImageBitmap(androidFrameConverter.convert(finalFrame));
+                        }
+                    });
                     recorder.record(frame);
                 }
 
                 recorder.stop();
                 grabber.stop();
+
+                Log.e(TAG, "processVideo: noOfFrames = " + noOfFrames);
+
                 dismissProgressDialog();
+
+                playVideoOnScreen();
 
             } catch (Exception e) {
                 dismissProgressDialog();
@@ -200,9 +309,40 @@ public class VideoFragment extends Fragment {
         }
     }
 
+    private void playVideoOnScreen() {
+
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                binding.btnSave.setVisibility(View.VISIBLE);
+                binding.videoView.setVisibility(View.VISIBLE);
+                binding.lyProcessing.setVisibility(View.GONE);
+
+
+                //Creating MediaController
+                MediaController mediaController = new MediaController(getActivity());
+                mediaController.setAnchorView(binding.videoView);
+
+
+                //Setting MediaController and URI, then starting the videoView
+                binding.videoView.setMediaController(mediaController);
+                binding.videoView.setVideoPath(output.getAbsolutePath());
+                binding.videoView.requestFocus();
+                binding.videoView.start();
+            }
+        });
+
+    }
+
+    private static double round (double value, int precision) {
+        int scale = (int) Math.pow(10, precision);
+        return (double) Math.round(value * scale) / scale;
+    }
+
     private OutputStream getFileOutputStream() {
 
-        String videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
+        videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues valuesvideos = new ContentValues();
@@ -218,6 +358,7 @@ public class VideoFragment extends Fragment {
             try {
                 ParcelFileDescriptor pfd = getActivity().getContentResolver().openFileDescriptor(uriSavedVideo, "rw");
                 OutputStream out = getActivity().getContentResolver().openOutputStream(uriSavedVideo);
+                path = "/Internal storage/Movies/BlurFaces/" + videoFileName;
                 return out;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -232,13 +373,14 @@ public class VideoFragment extends Fragment {
 
 
         } else {
-            File outputDirectory = new File(Environment.getExternalStoragePublicDirectory("") + "/Video/");
+            File outputDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/BlurFaces/");
             if (!outputDirectory.exists()) {
                 outputDirectory.mkdirs();
             }
             String outputDir = outputDirectory.getAbsolutePath();
-            String outputFile = outputDir + "/vid_" + new SimpleDateFormat("yyyyMM_dd-HHmmss").format(new Date()) + ".mp4";
+            String outputFile = outputDir + videoFileName;
             File file = new File(outputFile);
+            path = "/Internal storage/Movies/BlurFaces/" + videoFileName;
 
             OutputStream out = null;
             try {
@@ -258,6 +400,11 @@ public class VideoFragment extends Fragment {
                 dismissLoadingDialog();
             }
         });
+    }
+    private void dismissLoadingDialog() {
+        if (isAdded() && progressDialog != null) {
+            progressDialog.dismiss();
+        }
     }
 
     private CascadeClassifier setupCascadeClassifier() {
@@ -290,19 +437,37 @@ public class VideoFragment extends Fragment {
         return cascadeClassifier;
     }
 
-    private void dismissLoadingDialog() {
-        if (isAdded() && progressDialog != null) {
-            progressDialog.dismiss();
-        }
-    }
+
 
     private void initProgressDialog() {
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("Please Wait..."); // Setting Message
-        progressDialog.setTitle("Handwriting To Text"); // Setting Title
+        progressDialog.setTitle("Blur Faces in Video"); // Setting Title
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
         progressDialog.show(); // Display Progress Dialog
         progressDialog.setCancelable(false);
 
     }
+
+
+//Use seekablebytearray
+//    @Test
+//    public void testVideoBytesEqual() {
+//        // if this test fails it might be due to indeterministic multithreaded encoding
+//        System.out.println("SeekableByteArrayOutputStreamVideo");
+//        File tempFile = new File(Loader.getTempDir(), "test.mp4");
+//        try {
+//            createVideo(new FFmpegFrameRecorder(tempFile, WIDTH, HEIGHT, 0));
+//            byte[] fileBytes = Files.readAllBytes(tempFile.toPath());
+//
+//            SeekableByteArrayOutputStream byteArrayOutputStream = new SeekableByteArrayOutputStream();
+//            createVideo(new FFmpegFrameRecorder(byteArrayOutputStream, WIDTH, HEIGHT, 0));
+//            assertArrayEquals(fileBytes, byteArrayOutputStream.toByteArray());
+//        } catch (Exception e) {
+//            fail("Exception should not have been thrown: " + e);
+//        } finally {
+//            tempFile.delete();
+//        }
+//    }
+
 }
