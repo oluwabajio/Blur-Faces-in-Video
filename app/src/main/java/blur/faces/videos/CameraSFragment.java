@@ -33,11 +33,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-
-import com.google.mlkit.vision.face.FaceDetection;
-import com.google.mlkit.vision.face.FaceDetector;
-import com.google.mlkit.vision.face.FaceDetectorOptions;
-
 import org.bytedeco.javacv.AndroidFrameConverter;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
@@ -85,7 +80,6 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
     private final Object semaphore = new Object();
     private int absoluteFaceSize = 0;
     private CascadeClassifier cascadeClassifier;
-    private FaceDetector mDetector;
     OpenCVFrameConverter converter = new OpenCVFrameConverter() {
         @Override
         public Frame convert(Object o) {
@@ -129,9 +123,7 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         binding.lyCameraView.addView(cameraView, params);
 
 
-        PowerManager pm = (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, CLASS_LABEL);
-        wakeLock.acquire();
+
 
         initLayout();
         return binding.getRoot();

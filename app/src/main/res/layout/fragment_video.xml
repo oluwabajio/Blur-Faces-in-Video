@@ -14,11 +14,11 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <VideoView
-            android:id="@+id/videoView"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+        <SurfaceView
+            android:id="@+id/surfaceview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+        />
 
         <LinearLayout
             android:id="@+id/lyProcessing"
@@ -32,7 +32,7 @@
                 android:id="@+id/imgImage"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/tvProgress"

@@ -14,11 +14,14 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -27,6 +30,7 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.MediaController;
@@ -119,7 +123,7 @@ public class VideoFragment extends Fragment {
     private void startVideoOperation() {
 //        initProgressDialog();
         binding.btnSave.setVisibility(View.GONE);
-        binding.videoView.setVisibility(View.GONE);
+        binding.surfaceview.setVisibility(View.GONE);
         binding.lyProcessing.setVisibility(View.VISIBLE);
         AsyncTask.execute(new Runnable() {
             @Override
@@ -128,7 +132,6 @@ public class VideoFragment extends Fragment {
             }
         });
     }
-
 
 
     private void processVideo() {
@@ -155,8 +158,6 @@ public class VideoFragment extends Fragment {
             grabber.start();
 
             int frameCount = grabber.getLengthInFrames();
-
-
 
 
             FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(output.getAbsolutePath(), grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
@@ -243,10 +244,10 @@ public class VideoFragment extends Fragment {
                         @Override
                         public void run() {
                             Log.e(TAG, "run: current frame = " + finalNoOfFrames + " total Frames " + frameCount);
-                            double percent = ((double)finalNoOfFrames / frameCount) * 100;
+                            double percent = ((double) finalNoOfFrames / frameCount) * 100;
                             double _percent = round(percent, 1);
-                            binding.tvProgress.setText("Processing \n" + _percent +"%");
-                            Log.e(TAG, "run: percent = "+ _percent );
+                            binding.tvProgress.setText("Processing \n" + _percent + "%");
+                            Log.e(TAG, "run: percent = " + _percent);
                             binding.imgImage.setImageBitmap(androidFrameConverter.convert(finalFrame));
                         }
                     });
@@ -279,26 +280,71 @@ public class VideoFragment extends Fragment {
             @Override
             public void run() {
                 binding.btnSave.setVisibility(View.VISIBLE);
-                binding.videoView.setVisibility(View.VISIBLE);
+                binding.surfaceview.setVisibility(View.VISIBLE);
                 binding.lyProcessing.setVisibility(View.GONE);
 
 
                 //Creating MediaController
-                MediaController mediaController = new MediaController(getActivity());
-                mediaController.setAnchorView(binding.videoView);
+//                MediaController mediaController = new MediaController(getActivity());
+//                mediaController.setAnchorView(binding.videoView);
+//
+//
+//                //Setting MediaController and URI, then starting the videoView
+//                binding.videoView.setMediaController(mediaController);
+//                binding.videoView.setVideoPath(output.getAbsolutePath());
+//                binding.videoView.requestFocus();
+//                binding.videoView.start();
 
 
-                //Setting MediaController and URI, then starting the videoView
-                binding.videoView.setMediaController(mediaController);
-                binding.videoView.setVideoPath(output.getAbsolutePath());
-                binding.videoView.requestFocus();
-                binding.videoView.start();
+
+                binding.surfaceview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+                try {
+                    FileInputStream fi = new FileInputStream(output);
+                    MediaPlayer mediaPlayer = new MediaPlayer();
+                    mediaPlayer.setDataSource(fi.getFD());
+                    mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+
+
+                    binding.surfaceview.getHolder().addCallback(new SurfaceHolder.Callback() {
+                        @Override
+                        public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+                            mediaPlayer.setDisplay(binding.surfaceview.getHolder());
+                        }
+
+                        @Override
+                        public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
+                        }
+
+                        @Override
+                        public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+
+                        }
+                    });
+
+                    mediaPlayer.prepare();
+                    mediaPlayer.start();
+
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "run: Error: "+ e.getMessage() );
+                } catch (IllegalStateException e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "run: Error: "+ e.getMessage() );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "run: Error: "+ e.getMessage() );
+                }
+
+
             }
         });
 
     }
 
-    private static double round (double value, int precision) {
+    private static double round(double value, int precision) {
         int scale = (int) Math.pow(10, precision);
         return (double) Math.round(value * scale) / scale;
     }
@@ -364,8 +410,10 @@ public class VideoFragment extends Fragment {
                     dismissLoadingDialog();
                 }
             });
-        }catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }
+
     private void dismissLoadingDialog() {
         if (isAdded() && progressDialog != null) {
             progressDialog.dismiss();
