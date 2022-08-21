@@ -7,6 +7,9 @@ import static org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_MPEG4;
 import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P;
 
 
+import static blur.faces.videos.utils.AppUtils.copy;
+import static blur.faces.videos.utils.AppUtils.setupCascadeClassifier;
+
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
@@ -127,55 +130,14 @@ public class VideoFragment extends Fragment {
     }
 
 
-    public static void copy(InputStream in, File dst) throws IOException {
-
-        try {
-            OutputStream out = new FileOutputStream(dst);
-            try {
-                // Transfer bytes from in to out
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-            } finally {
-                out.close();
-            }
-        } finally {
-            in.close();
-        }
-    }
-
-    public static void copy(InputStream in, OutputStream out) throws IOException {
-
-        try {
-
-            try {
-                // Transfer bytes from in to out
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-            } finally {
-                out.close();
-            }
-        } finally {
-            in.close();
-        }
-    }
 
     private void processVideo() {
 
 
-        CascadeClassifier cascadeClassifier = setupCascadeClassifier();
+        CascadeClassifier cascadeClassifier = setupCascadeClassifier(getActivity());
 
         try {
             InputStream inputStream = getActivity().getContentResolver().openInputStream(sharedViewModel.getSelectedVideoUri().getValue());
-
-//            FFmpegLogCallback.set();
-//
-
 
 //            InputStream inputStream = getActivity().getAssets().open("face3.mp4");
 
@@ -284,6 +246,7 @@ public class VideoFragment extends Fragment {
                             double percent = ((double)finalNoOfFrames / frameCount) * 100;
                             double _percent = round(percent, 1);
                             binding.tvProgress.setText("Processing \n" + _percent +"%");
+                            Log.e(TAG, "run: percent = "+ _percent );
                             binding.imgImage.setImageBitmap(androidFrameConverter.convert(finalFrame));
                         }
                     });
@@ -394,12 +357,14 @@ public class VideoFragment extends Fragment {
     }
 
     private void dismissProgressDialog() {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                dismissLoadingDialog();
-            }
-        });
+        try {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dismissLoadingDialog();
+                }
+            });
+        }catch (Exception e) {}
     }
     private void dismissLoadingDialog() {
         if (isAdded() && progressDialog != null) {
@@ -407,36 +372,36 @@ public class VideoFragment extends Fragment {
         }
     }
 
-    private CascadeClassifier setupCascadeClassifier() {
-        InputStream is = getResources().openRawResource(R.raw.haarcascade);
-        File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
-        File mCascadeFile = new File(cascadeDir, "cascade.xml");
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(mCascadeFile);
-
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
-            }
-            is.close();
-            os.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // We can "cast" Pointer objects by instantiating a new object of the desired class.
-        cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-        if (cascadeClassifier == null) {
-            System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
-            System.exit(1);
-            Log.e(TAG, "processOpencv: Error loading file");
-            Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
-        }
-        return cascadeClassifier;
-    }
-
+//    private CascadeClassifier setupCascadeClassifier() {
+//        InputStream is = getResources().openRawResource(R.raw.haarcascade);
+//        File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
+//        File mCascadeFile = new File(cascadeDir, "cascade.xml");
+//        FileOutputStream os = null;
+//        try {
+//            os = new FileOutputStream(mCascadeFile);
+//
+//            byte[] buffer = new byte[4096];
+//            int bytesRead;
+//            while ((bytesRead = is.read(buffer)) != -1) {
+//                os.write(buffer, 0, bytesRead);
+//            }
+//            is.close();
+//            os.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        // We can "cast" Pointer objects by instantiating a new object of the desired class.
+//        cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+//        if (cascadeClassifier == null) {
+//            System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
+//            System.exit(1);
+//            Log.e(TAG, "processOpencv: Error loading file");
+//            Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
+//        }
+//        return cascadeClassifier;
+//    }
+//
 
 
     private void initProgressDialog() {

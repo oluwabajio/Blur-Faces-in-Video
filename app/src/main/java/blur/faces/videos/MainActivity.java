@@ -4,9 +4,11 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -55,18 +57,20 @@ public class MainActivity extends AppCompatActivity {
 
 
     private int PERMISSION_REQUEST_CODE = 333;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    requestWindowFeature(Window.FEATURE_NO_TITLE);
-       getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         Loader.load(org.bytedeco.opencv.opencv_java.class);
+
 
 
         setSupportActionBar(binding.toolbar);
@@ -76,12 +80,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
 
-
-
-
-        if (!checkPermission()) {
-            requestPermission();
-        }
+//        if (!checkPermission()) {
+//            requestPermission();
+//        }
 
 
     }
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 intent.addCategory("android.intent.category.DEFAULT");
-                intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
                 startActivityForResult(intent, 2296);
             } catch (Exception e) {
                 Intent intent = new Intent();
@@ -153,6 +154,31 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
                 }
             }
+        }
+    }
+
+    private void initProgressDialog() {
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Please Wait..."); // Setting Message
+        progressDialog.setTitle("Blur Faces in Video"); // Setting Title
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
+        progressDialog.show(); // Display Progress Dialog
+        progressDialog.setCancelable(false);
+
+    }
+
+    private void dismissProgressDialog() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    private void dismissLoadingDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
         }
     }
 }

@@ -33,7 +33,7 @@
     <fragment
         android:id="@+id/camera2Fragment"
         android:name="blur.faces.videos.CameraSFragment"
-        android:label="fragment_camera2"
+        android:label="Blur Face In Camera"
         tools:layout="@layout/fragment_camera_s" />
 
 </navigation>

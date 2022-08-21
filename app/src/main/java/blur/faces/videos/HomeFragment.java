@@ -182,7 +182,9 @@ public class HomeFragment extends Fragment {
     }
 
     private void startCamera() {
-        NavHostFragment.findNavController(this).navigate(R.id.camera2Fragment);
+        Bundle bundle = new Bundle();
+        bundle.putInt("camType", 99);
+        NavHostFragment.findNavController(this).navigate(R.id.camera2Fragment, bundle);
 
     }
 

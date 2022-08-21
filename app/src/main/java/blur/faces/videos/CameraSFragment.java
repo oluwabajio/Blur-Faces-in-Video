@@ -5,22 +5,33 @@ import static org.bytedeco.opencv.global.opencv_core.CV_8UC1;
 import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.opencv.global.opencv_imgproc.cvtColor;
 
+import static blur.faces.videos.utils.AppUtils.copy;
+import static blur.faces.videos.utils.AppUtils.setupCascadeClassifier;
+
+import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.mlkit.vision.face.FaceDetection;
@@ -45,9 +56,12 @@ import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import blur.faces.videos.databinding.FragmentCameraSBinding;
 import blur.faces.videos.utils.CvCameraPreview;
@@ -61,7 +75,8 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
     private PowerManager.WakeLock wakeLock;
     private boolean recording;
     private CvCameraPreview cameraView;
-    private File savePath = new File(Environment.getExternalStorageDirectory(), "stream.mp4");
+    //    private File savePath = new File(Environment.getExternalStorageDirectory(), "stream.mp4");
+    private File savePath;
     private FFmpegFrameRecorder recorder;
     private long startTime = 0;
     private static final String TAG = "CameraSFragment";
@@ -70,7 +85,6 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
     private final Object semaphore = new Object();
     private int absoluteFaceSize = 0;
     private CascadeClassifier cascadeClassifier;
-    private org.bytedeco.opencv.opencv_objdetect.CascadeClassifier cascadeClassifier2;
     private FaceDetector mDetector;
     OpenCVFrameConverter converter = new OpenCVFrameConverter() {
         @Override
@@ -86,6 +100,14 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
 
     Mat glmat = null;
     Mat facemat = null;
+    private String videoFileName = "";
+    private String path = "";
+    private ProgressDialog progressDialog;
+    private int recorderWidth = 0;
+    private int recorderHeight = 0;
+    private boolean flipBoolean;
+    private int camType;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -94,10 +116,18 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
 
         binding = FragmentCameraSBinding.inflate(inflater, container, false);
 
+        camType = getArguments().getInt("camType");
 
-//    setContentView(R.layout.activity_record);
+//        cameraView = binding.cameraView;
+        cameraView = new CvCameraPreview(getActivity(), camType, 2);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+        params.leftMargin = 0;
 
-        cameraView = binding.cameraView;
+
+        binding.lyCameraView.addView(cameraView, params);
+
 
         PowerManager pm = (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, CLASS_LABEL);
@@ -107,36 +137,61 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         return binding.getRoot();
     }
 
+    private void initProgressDialog() {
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setMessage("Please Wait..."); // Setting Message
+        progressDialog.setTitle("Blur Faces in Video"); // Setting Title
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
+        progressDialog.show(); // Display Progress Dialog
+        progressDialog.setCancelable(false);
+
+    }
+
+    private void dismissProgressDialog() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dismissLoadingDialog();
+            }
+        });
+    }
+
+    private void dismissLoadingDialog() {
+        if (isAdded() && progressDialog != null) {
+            progressDialog.dismiss();
+        }
+    }
+
 
     @Override
     public void onResume() {
         super.onResume();
 
-        if (wakeLock == null) {
-            PowerManager pm = (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, CLASS_LABEL);
-            wakeLock.acquire();
-        }
+//        if (wakeLock == null) {
+//            PowerManager pm = (PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
+//            wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, CLASS_LABEL);
+//            wakeLock.acquire();
+//        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        if (wakeLock != null) {
-            wakeLock.release();
-            wakeLock = null;
-        }
+//        if (wakeLock != null) {
+//            wakeLock.release();
+//            wakeLock = null;
+//        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        if (wakeLock != null) {
-            wakeLock.release();
-            wakeLock = null;
-        }
+//
+//        if (wakeLock != null) {
+//            wakeLock.release();
+//            wakeLock = null;
+//        }
 
         if (recorder != null) {
             try {
@@ -150,20 +205,18 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
 
 
     private void initLayout() {
-        FaceDetectorOptions options = new FaceDetectorOptions.Builder()
-                .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
-                .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
-                .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
-                .build();
-        mDetector = FaceDetection.getClient(options);
 
-        cascadeClassifier = setupCascadeClassifier();
-        cascadeClassifier2 = setupCascadeClassifier2();
+
+        cascadeClassifier = setupCascadeClassifier(getActivity());
 
         cameraView.setCvCameraViewListener(this);
         binding.btnStart.setOnClickListener(this);
+        binding.btnFlip.setOnClickListener(v -> {
+            flipBoolean = !flipBoolean;
+refreshCurrentFragment();
+        });
 
-        initFaceAndGlass();
+//        initFaceAndGlass();
     }
 
     private void initFaceAndGlass() {
@@ -172,19 +225,19 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         try {
             inputStream = getActivity().getAssets().open("eyeglasses.png");
 
-        InputStream inputStreamFace = getActivity().getAssets().open("face.jpg");
+            InputStream inputStreamFace = getActivity().getAssets().open("face.jpg");
 
-        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-        Bitmap bitmapFace = BitmapFactory.decodeStream(inputStreamFace);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            Bitmap bitmapFace = BitmapFactory.decodeStream(inputStreamFace);
 
 
-        AndroidFrameConverter androidFrameConverter = new AndroidFrameConverter();
-        AndroidFrameConverter androidFrameConverter2 = new AndroidFrameConverter();
-        Frame fr = androidFrameConverter.convert(bitmap);
-        Frame frface = androidFrameConverter2.convert(bitmapFace);
+            AndroidFrameConverter androidFrameConverter = new AndroidFrameConverter();
+            AndroidFrameConverter androidFrameConverter2 = new AndroidFrameConverter();
+            Frame fr = androidFrameConverter.convert(bitmap);
+            Frame frface = androidFrameConverter2.convert(bitmapFace);
 
-        glmat = converterToMat.convert(fr);
-        facemat = converterToMat2.convert(frface);
+            glmat = converterToMat.convert(fr);
+            facemat = converterToMat2.convert(frface);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -226,6 +279,8 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
                 frameHeight = height;
         }
 
+
+        savePath = new File(getActivity().getExternalFilesDir("BlurFace"), "stream.mp4");
         Log.e(LOG_TAG, "saved file path: " + savePath.getAbsolutePath());
         recorder = new FFmpegFrameRecorder(savePath, frameWidth, frameHeight, 0);
         recorder.setFormat("mp4");
@@ -307,6 +362,7 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
             }
             recorder = null;
         }
+        initRecorder(recorderWidth, recorderHeight);
     }
 
     @Override
@@ -315,21 +371,39 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
             startRecording();
             recording = true;
             Log.e(LOG_TAG, "Start Button Pushed");
-            binding.btnStart.setText("Stop");
-            binding.btnStart.setBackgroundResource(android.R.drawable.ic_dialog_info);
+//            binding.btnStart.setText("Stop");
+//            binding.btnStart.setBackgroundResource(R.drawable.stop_record);
+            binding.btnStart.setImageResource(R.drawable.stop_record);
         } else {
             // This will trigger the audio recording loop to stop and then set isRecorderStart = false;
             stopRecording();
             recording = false;
             Log.e(LOG_TAG, "Stop Button Pushed");
 //            btnRecorderControl.setText("Start");
-            binding.btnStart.setVisibility(View.GONE);
-            Toast.makeText(getActivity(), "Video file was saved to \"" + savePath + "\"", Toast.LENGTH_LONG).show();
+//            binding.btnStart.setVisibility(View.GONE);
+            binding.btnStart.setImageResource(R.drawable.record);
+
+            try {
+                copy(new FileInputStream(savePath), getFileOutputStream());
+
+                Toast.makeText(getActivity(), "Video file was saved to \"" + path + "\"", Toast.LENGTH_LONG).show();
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                Log.e(TAG, "startRecording:9 Failed, Error = " + e.getMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e(TAG, "startRecording:10 Failed, Error = " + e.getMessage());
+            }
+
+
         }
     }
 
     @Override
     public void onCameraViewStarted(int width, int height) {
+        recorderWidth = width;
+        recorderHeight = height;
         initRecorder(width, height);
     }
 
@@ -344,17 +418,12 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
             synchronized (semaphore) {
                 try {
 
-
-                    Frame newFrame = detectFace3(mat);
-//                    Frame newFrame = detectFace(converter.convert(mat));
+                    Frame newFrame = detectFace(converter.convert(mat));
                     long t = 1000 * (System.currentTimeMillis() - startTime);
                     if (t > recorder.getTimestamp()) {
                         recorder.setTimestamp(t);
                     }
                     recorder.record(newFrame);
-//                    recorder.record(frame);
-//    detectFrame2();
-
 
                 } catch (FrameRecorder.Exception e) {
                     Log.e(LOG_TAG, e.getMessage());
@@ -366,83 +435,8 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         return mat;
     }
 
-    private void detectFrame2() {
-
-//                    OpenCVFrameConverter converter = new OpenCVFrameConverter() {
-//                        @Override
-//                        public Frame convert(Object o) {
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public Object convert(Frame frame) {
-//                            return null;
-//                        }
-//                    };
-//                    AndroidFrameConverter androidFrameConverter = new AndroidFrameConverter();
-//
-//                    InputImage inputImage = InputImage.fromBitmap(androidFrameConverter.convert(frame), 0);
-//
-//                    mDetector.process(inputImage)
-//                            .addOnSuccessListener(faces -> {
-//                                if (faces.size() > 0) {
-//                                    Face face = faces.get(0);
-//                                    Rect[] facesArray = new Rect[faces.size()];
-//
-//                                    for (int i = 0; i < faces.size(); i++) {
-//                                        android.graphics.Rect re = faces.get(i).getBoundingBox();
-//                                        facesArray[i] = new org.opencv.core.Rect(re.left, re.top, re.width(), re.height());
-//                                    }
-//
-//                                    org.opencv.core.Mat srcMat = converter.convertToOrgOpenCvCoreMat(frame);
-//
-//                                    Log.e(TAG, "processOpencv: Detected faces = " + facesArray.length);
-//                                    for (int i = 0; i < facesArray.length; i++) {
-//
-////                                        org.opencv.core.Mat imageROI = new org.opencv.core.Mat(greyscaledMat, facesArray[i]);
-//                                        org.opencv.core.Mat mask = srcMat.submat(facesArray[i]);
-//                                        Imgproc.GaussianBlur(mask, mask, new Size(55, 55), 55); // or any other processing
-//
-//                                    }
-//
-//
-//                                    Frame newFrame = converter.convert(srcMat);
-//
-//                                    long t = 1000 * (System.currentTimeMillis() - startTime);
-//                                    if (t > recorder.getTimestamp()) {
-//                                        recorder.setTimestamp(t);
-//                                    }
-//                                    try {
-//                                        if (t > recorder.getTimestamp()) {
-//                                            recorder.setTimestamp(t);
-//                                        }
-////                                        recorder.record(newFrame);
-//                                        recorder.record(newFrame);
-//                                    } catch (FrameRecorder.Exception e) {
-//                                        e.printStackTrace();
-//                                    }
-//
-//
-//                                }
-//                            })
-//                            .addOnFailureListener(Throwable::printStackTrace)
-//                            .addOnCompleteListener(task -> {});
-    }
-
 
     private Frame detectFace(Frame frame) {
-        OpenCVFrameConverter converter = new OpenCVFrameConverter() {
-            @Override
-            public Frame convert(Object o) {
-                return null;
-            }
-
-            @Override
-            public Object convert(Frame frame) {
-                return null;
-            }
-        };
-
 
         org.opencv.core.Mat srcMat = converter.convertToOrgOpenCvCoreMat(frame);
         org.opencv.core.Mat greyscaledMat = new org.opencv.core.Mat();
@@ -450,13 +444,7 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         Imgproc.cvtColor(srcMat, greyscaledMat, Imgproc.COLOR_RGB2GRAY);
         Imgproc.equalizeHist(greyscaledMat, greyscaledMat);
 
-
-        if (this.absoluteFaceSize == 0) {
-            int height = greyscaledMat.rows();
-            if (Math.round(height * 0.2f) > 0) {
-                this.absoluteFaceSize = Math.round(height * 0.2f);
-            }
-        }
+        initAbsoluteFace(greyscaledMat);
 
 
         MatOfRect faces = new MatOfRect();
@@ -479,132 +467,80 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
 
     }
 
-    private Frame detectFace3(Mat mat) {
-        OpenCVFrameConverter converter = new OpenCVFrameConverter() {
-            @Override
-            public Frame convert(Object o) {
-                return null;
-            }
-
-            @Override
-            public Object convert(Frame frame) {
-                return null;
-            }
-        };
-
-
-        Mat grayMat = new Mat(mat.rows(), mat.cols());
-        cvtColor(mat, grayMat, CV_BGR2GRAY);
-        RectVector faces = new RectVector();
-
+    private void initAbsoluteFace(org.opencv.core.Mat greyscaledMat) {
         if (this.absoluteFaceSize == 0) {
-            int height = grayMat.rows();
-            if (Math.round(height * 0.2f) > 0) {
-                this.absoluteFaceSize = Math.round(height * 0.2f);
+            int height = greyscaledMat.rows();
+            if (Math.round(height * 0.1f) > 0) {
+                this.absoluteFaceSize = Math.round(height * 0.1f);
             }
-        }
-
-        cascadeClassifier2.detectMultiScale(grayMat, faces, 1.1, 2, 0 | Objdetect.CASCADE_SCALE_IMAGE,
-                new org.bytedeco.opencv.opencv_core.Size(this.absoluteFaceSize, this.absoluteFaceSize), new org.bytedeco.opencv.opencv_core.Size());
-
-//        Rect[] facesArray = faces.toArray();
-
-
-
-            for (int i = 0; i < faces.size(); i++) {
-
-//            org.bytedeco.opencv.opencv_core.Mat imageROI = new org.bytedeco.opencv.opencv_core.Mat(grayMat, faces.get(i));
-
-
-                // img.apply(new Range(273, 333), new Range(100, 160)).put(img);
-//            blackImage.asMat().copyTo(mat.apply(new Range(250, 750), new Range(250, 750)));
-
-                //            blackImage.asMat().copyTo(mat, mat.apply(faces.get(i)) );
-//            blackImage.asMat().copyTo(mat.apply(faces.get(i)).put(mat) );
-//            blackImage.asMat().copyTo(mat.apply(new Range(0, 20), new Range(0, 20)));
-//            mat.apply(new Range(273, 333), new Range(100, 160)).put(blackImage.asMat());
-//            mat.copyTo(blackImage.asMat().apply(new Range(250, 750), new Range(250, 750)));
-//            mat.copyTo(blackImage.asMat().apply(new Range(250, 750), new Range(250, 750)));
-
-
-
-
-                Log.e(TAG, "detectFace3: hhhy");
-                Log.e(TAG, "detectFace3: rect details = x = " + faces.get(i).x() + " y = " + faces.get(i).y());
-                Log.e(TAG, "detectFace3: rect details = width = " + faces.get(i).width() + " height = " + faces.get(i).height());
-
-
-                Mat roi = new Mat(facemat, faces.get(i));
-//                Mat roi = new Mat(facemat, new org.bytedeco.opencv.opencv_core.Rect(0, 0, facemat.cols()/2, facemat.rows()/2));
-                glmat.copyTo(roi);
-
-            }
-            Frame frame = converter.convert(facemat);
-            return frame;
-
-
-
-
-    }
-        private CascadeClassifier setupCascadeClassifier () {
-            InputStream is = getResources().openRawResource(R.raw.haarcascade);
-            File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
-            File mCascadeFile = new File(cascadeDir, "cascade.xml");
-            FileOutputStream os = null;
-            try {
-                os = new FileOutputStream(mCascadeFile);
-
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    os.write(buffer, 0, bytesRead);
-                }
-                is.close();
-                os.close();
-            } catch (IOException e) {
-                Log.e(TAG, "startRecording:5 Failed, Error = " + e.getMessage());
-                e.printStackTrace();
-            }
-
-            // We can "cast" Pointer objects by instantiating a new object of the desired class.
-            cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-            if (cascadeClassifier == null) {
-                System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
-                System.exit(1);
-                Log.e(TAG, "processOpencv: Error loading file");
-                Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
-            }
-            return cascadeClassifier;
-        }
-
-        private org.bytedeco.opencv.opencv_objdetect.CascadeClassifier setupCascadeClassifier2 () {
-            InputStream is = getResources().openRawResource(R.raw.haarcascade);
-            File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
-            File mCascadeFile = new File(cascadeDir, "cascade.xml");
-            FileOutputStream os = null;
-            try {
-                os = new FileOutputStream(mCascadeFile);
-
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    os.write(buffer, 0, bytesRead);
-                }
-                is.close();
-                os.close();
-            } catch (IOException e) {
-                Log.e(TAG, "startRecording:6 Failed, Error = " + e.getMessage());
-                e.printStackTrace();
-            }
-
-            // We can "cast" Pointer objects by instantiating a new object of the desired class.
-            cascadeClassifier2 = new org.bytedeco.opencv.opencv_objdetect.CascadeClassifier(mCascadeFile.getAbsolutePath());
-            if (cascadeClassifier2 == null) {
-                System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
-                System.exit(1);
-                Log.e(TAG, "processOpencv: Error loading file");
-                Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
-            }
-            return cascadeClassifier2;
         }
     }
+
+
+    private OutputStream getFileOutputStream() {
+
+        videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues valuesvideos = new ContentValues();
+            valuesvideos.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/BlurFaces");
+            valuesvideos.put(MediaStore.Video.Media.TITLE, videoFileName);
+            valuesvideos.put(MediaStore.Video.Media.DISPLAY_NAME, videoFileName);
+            valuesvideos.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+            valuesvideos.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
+            valuesvideos.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
+            final Uri collection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            Uri uriSavedVideo = getActivity().getContentResolver().insert(collection, valuesvideos);
+
+            try {
+                ParcelFileDescriptor pfd = getActivity().getContentResolver().openFileDescriptor(uriSavedVideo, "rw");
+                OutputStream out = getActivity().getContentResolver().openOutputStream(uriSavedVideo);
+                path = "/Internal storage/Movies/BlurFaces/" + videoFileName;
+                return out;
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(getActivity(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return null;
+            }
+
+//                valuesvideos.clear();
+//                valuesvideos.put(MediaStore.Video.Media.IS_PENDING, 0);
+//                getActivity().getContentResolver().update(uriSavedVideo, valuesvideos, null, null);
+//                Toast.makeText(getActivity(), "Saved Successfully", Toast.LENGTH_SHORT).show();
+
+
+        } else {
+            File outputDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/BlurFaces/");
+            if (!outputDirectory.exists()) {
+                outputDirectory.mkdirs();
+            }
+            String outputDir = outputDirectory.getAbsolutePath();
+            String outputFile = outputDir + videoFileName;
+            File file = new File(outputFile);
+            path = "/Internal storage/Movies/BlurFaces/" + videoFileName;
+
+            OutputStream out = null;
+            try {
+                out = new FileOutputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            return out;
+
+        }
+    }
+
+    private void refreshCurrentFragment() {
+        NavController navController = NavHostFragment.findNavController(this);
+        int id = NavHostFragment.findNavController(this).getCurrentDestination().getId();
+        navController.popBackStack(id, true);
+        Bundle bundle = new Bundle();
+        bundle.putInt("camType", getCamType());
+        navController.navigate(id, bundle);
+    }
+
+    private int getCamType() {
+        return (camType == 99) ? 98 : 99;
+    }
+
+}

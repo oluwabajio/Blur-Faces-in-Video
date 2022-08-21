@@ -132,6 +132,10 @@ public class CvCameraPreview extends SurfaceView implements SurfaceHolder.Callba
 
     }
 
+//    public void setCamType(String camType){
+//        initializer(camType.equalsIgnoreCase("front") ? Camera.CameraInfo.CAMERA_FACING_BACK : Camera.CameraInfo.CAMERA_FACING_FRONT, scaleType);
+////        invalidate();
+//    }
     public CvCameraPreview(Context context, int camType, int scaleType) {
         super(context);
 
@@ -287,7 +291,7 @@ public class CvCameraPreview extends SurfaceView implements SurfaceHolder.Callba
     private void onExitStartedState() {
         disconnectCamera();
         if (cacheBitmap != null) {
-            cacheBitmap.recycle();
+        //    cacheBitmap.recycle();
         }
         if (filter != null) {
             try {
