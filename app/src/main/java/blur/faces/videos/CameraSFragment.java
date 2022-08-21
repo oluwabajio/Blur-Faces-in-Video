@@ -6,6 +6,8 @@ import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.opencv.global.opencv_imgproc.cvtColor;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +27,7 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 
+import org.bytedeco.javacv.AndroidFrameConverter;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameRecorder;
@@ -33,6 +36,7 @@ import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatExpr;
 import org.bytedeco.opencv.opencv_core.Range;
 import org.bytedeco.opencv.opencv_core.RectVector;
+import org.opencv.android.Utils;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Size;
@@ -62,6 +66,7 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
     private long startTime = 0;
     private static final String TAG = "CameraSFragment";
     private OpenCVFrameConverter.ToMat converterToMat = new OpenCVFrameConverter.ToMat();
+    private OpenCVFrameConverter.ToMat converterToMat2 = new OpenCVFrameConverter.ToMat();
     private final Object semaphore = new Object();
     private int absoluteFaceSize = 0;
     private CascadeClassifier cascadeClassifier;
@@ -79,6 +84,8 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         }
     };
 
+    Mat glmat = null;
+    Mat facemat = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -135,6 +142,7 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
             try {
                 recorder.release();
             } catch (FrameRecorder.Exception e) {
+                Log.e(TAG, "startRecording:7 Failed, Error = " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -154,6 +162,32 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
 
         cameraView.setCvCameraViewListener(this);
         binding.btnStart.setOnClickListener(this);
+
+        initFaceAndGlass();
+    }
+
+    private void initFaceAndGlass() {
+
+        InputStream inputStream = null;
+        try {
+            inputStream = getActivity().getAssets().open("eyeglasses.png");
+
+        InputStream inputStreamFace = getActivity().getAssets().open("face.jpg");
+
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        Bitmap bitmapFace = BitmapFactory.decodeStream(inputStreamFace);
+
+
+        AndroidFrameConverter androidFrameConverter = new AndroidFrameConverter();
+        AndroidFrameConverter androidFrameConverter2 = new AndroidFrameConverter();
+        Frame fr = androidFrameConverter.convert(bitmap);
+        Frame frface = androidFrameConverter2.convert(bitmapFace);
+
+        glmat = converterToMat.convert(fr);
+        facemat = converterToMat2.convert(frface);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initRecorder(int width, int height) {
@@ -253,6 +287,7 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
             startTime = System.currentTimeMillis();
             recording = true;
         } catch (FFmpegFrameRecorder.Exception e) {
+            Log.e(TAG, "startRecording:1 Failed, Error = " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -267,6 +302,7 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
                     recorder.release();
                 }
             } catch (FFmpegFrameRecorder.Exception e) {
+                Log.e(TAG, "startRecording:2 Failed, Error = " + e.getMessage());
                 e.printStackTrace();
             }
             recorder = null;
@@ -309,10 +345,8 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
                 try {
 
 
-
-
-//                    Frame newFrame = detectFace3(mat);
-                    Frame newFrame = detectFace(converter.convert(mat));
+                    Frame newFrame = detectFace3(mat);
+//                    Frame newFrame = detectFace(converter.convert(mat));
                     long t = 1000 * (System.currentTimeMillis() - startTime);
                     if (t > recorder.getTimestamp()) {
                         recorder.setTimestamp(t);
@@ -322,8 +356,9 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
 //    detectFrame2();
 
 
-                } catch (Exception e) {
+                } catch (FrameRecorder.Exception e) {
                     Log.e(LOG_TAG, e.getMessage());
+                    Log.e(TAG, "startRecording:3 Failed, Error = " + e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -409,7 +444,6 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         };
 
 
-
         org.opencv.core.Mat srcMat = converter.convertToOrgOpenCvCoreMat(frame);
         org.opencv.core.Mat greyscaledMat = new org.opencv.core.Mat();
 
@@ -459,7 +493,6 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
         };
 
 
-
         Mat grayMat = new Mat(mat.rows(), mat.cols());
         cvtColor(mat, grayMat, CV_BGR2GRAY);
         RectVector faces = new RectVector();
@@ -475,17 +508,18 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
                 new org.bytedeco.opencv.opencv_core.Size(this.absoluteFaceSize, this.absoluteFaceSize), new org.bytedeco.opencv.opencv_core.Size());
 
 //        Rect[] facesArray = faces.toArray();
-        MatExpr blackImage = null;
-        for (int i = 0; i < faces.size(); i++) {
+
+
+
+            for (int i = 0; i < faces.size(); i++) {
 
 //            org.bytedeco.opencv.opencv_core.Mat imageROI = new org.bytedeco.opencv.opencv_core.Mat(grayMat, faces.get(i));
 
 
-
-           // img.apply(new Range(273, 333), new Range(100, 160)).put(img);
+                // img.apply(new Range(273, 333), new Range(100, 160)).put(img);
 //            blackImage.asMat().copyTo(mat.apply(new Range(250, 750), new Range(250, 750)));
-            blackImage = Mat.zeros(new org.bytedeco.opencv.opencv_core.Size(faces.get(i).width(), faces.get(i).height()), CV_8UC1);
-//            blackImage.asMat().copyTo(mat, mat.apply(faces.get(i)) );
+
+                //            blackImage.asMat().copyTo(mat, mat.apply(faces.get(i)) );
 //            blackImage.asMat().copyTo(mat.apply(faces.get(i)).put(mat) );
 //            blackImage.asMat().copyTo(mat.apply(new Range(0, 20), new Range(0, 20)));
 //            mat.apply(new Range(273, 333), new Range(100, 160)).put(blackImage.asMat());
@@ -495,85 +529,82 @@ public class CameraSFragment extends Fragment implements View.OnClickListener, C
 
 
 
+                Log.e(TAG, "detectFace3: hhhy");
+                Log.e(TAG, "detectFace3: rect details = x = " + faces.get(i).x() + " y = " + faces.get(i).y());
+                Log.e(TAG, "detectFace3: rect details = width = " + faces.get(i).width() + " height = " + faces.get(i).height());
 
 
-            Mat imageROII = mat.apply(new org.bytedeco.opencv.opencv_core.Rect(faces.get(i).x(), faces.get(i).y(), faces.get(i).width(), faces.get(i).height()));
-            mat.copyTo(imageROII, mat);
+                Mat roi = new Mat(facemat, faces.get(i));
+//                Mat roi = new Mat(facemat, new org.bytedeco.opencv.opencv_core.Rect(0, 0, facemat.cols()/2, facemat.rows()/2));
+                glmat.copyTo(roi);
 
-            Log.e(TAG, "detectFace3: hhhy" );
-
-
-
-
-            //   Mat f = new Mat(new Rect(4,5,7,8));
-           // blackImage.asMat().apply()
-//            org.bytedeco.opencv.opencv_core.Mat mask = mat.submat(faces.get(i));
-//            org.bytedeco.opencv.global.opencv_imgproc.GaussianBlur(mask, mask, new org.bytedeco.opencv.opencv_core.Size(55, 55), 55); // or any other processing
-
-        }
-        Frame    frame = converter.convert(mat);
-        return frame;
-
-    }
-
-
-    private CascadeClassifier setupCascadeClassifier() {
-        InputStream is = getResources().openRawResource(R.raw.haarcascade);
-        File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
-        File mCascadeFile = new File(cascadeDir, "cascade.xml");
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(mCascadeFile);
-
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
             }
-            is.close();
-            os.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            Frame frame = converter.convert(facemat);
+            return frame;
 
-        // We can "cast" Pointer objects by instantiating a new object of the desired class.
-        cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-        if (cascadeClassifier == null) {
-            System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
-            System.exit(1);
-            Log.e(TAG, "processOpencv: Error loading file");
-            Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
-        }
-        return cascadeClassifier;
+
+
+
     }
+        private CascadeClassifier setupCascadeClassifier () {
+            InputStream is = getResources().openRawResource(R.raw.haarcascade);
+            File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
+            File mCascadeFile = new File(cascadeDir, "cascade.xml");
+            FileOutputStream os = null;
+            try {
+                os = new FileOutputStream(mCascadeFile);
 
-    private org.bytedeco.opencv.opencv_objdetect.CascadeClassifier setupCascadeClassifier2() {
-        InputStream is = getResources().openRawResource(R.raw.haarcascade);
-        File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
-        File mCascadeFile = new File(cascadeDir, "cascade.xml");
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(mCascadeFile);
-
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+                is.close();
+                os.close();
+            } catch (IOException e) {
+                Log.e(TAG, "startRecording:5 Failed, Error = " + e.getMessage());
+                e.printStackTrace();
             }
-            is.close();
-            os.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            // We can "cast" Pointer objects by instantiating a new object of the desired class.
+            cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+            if (cascadeClassifier == null) {
+                System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
+                System.exit(1);
+                Log.e(TAG, "processOpencv: Error loading file");
+                Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
+            }
+            return cascadeClassifier;
         }
 
-        // We can "cast" Pointer objects by instantiating a new object of the desired class.
-        cascadeClassifier2 = new org.bytedeco.opencv.opencv_objdetect.CascadeClassifier(mCascadeFile.getAbsolutePath());
-        if (cascadeClassifier2 == null) {
-            System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
-            System.exit(1);
-            Log.e(TAG, "processOpencv: Error loading file");
-            Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
+        private org.bytedeco.opencv.opencv_objdetect.CascadeClassifier setupCascadeClassifier2 () {
+            InputStream is = getResources().openRawResource(R.raw.haarcascade);
+            File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
+            File mCascadeFile = new File(cascadeDir, "cascade.xml");
+            FileOutputStream os = null;
+            try {
+                os = new FileOutputStream(mCascadeFile);
+
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+                is.close();
+                os.close();
+            } catch (IOException e) {
+                Log.e(TAG, "startRecording:6 Failed, Error = " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            // We can "cast" Pointer objects by instantiating a new object of the desired class.
+            cascadeClassifier2 = new org.bytedeco.opencv.opencv_objdetect.CascadeClassifier(mCascadeFile.getAbsolutePath());
+            if (cascadeClassifier2 == null) {
+                System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
+                System.exit(1);
+                Log.e(TAG, "processOpencv: Error loading file");
+                Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
+            }
+            return cascadeClassifier2;
         }
-        return cascadeClassifier2;
     }
-}
