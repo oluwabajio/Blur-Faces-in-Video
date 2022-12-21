@@ -142,8 +142,6 @@ public class VideoFragment extends Fragment {
         try {
             InputStream inputStream = getActivity().getContentResolver().openInputStream(sharedViewModel.getSelectedVideoUri().getValue());
 
-//            InputStream inputStream = getActivity().getAssets().open("face3.mp4");
-
             File folder = getActivity().getExternalFilesDir("BlurFace");
             File copyFile = new File(folder, "file.mp4");
             output = new File(folder, "output.mp4");
@@ -284,18 +282,6 @@ public class VideoFragment extends Fragment {
                 binding.lyProcessing.setVisibility(View.GONE);
 
 
-                //Creating MediaController
-//                MediaController mediaController = new MediaController(getActivity());
-//                mediaController.setAnchorView(binding.videoView);
-//
-//
-//                //Setting MediaController and URI, then starting the videoView
-//                binding.videoView.setMediaController(mediaController);
-//                binding.videoView.setVideoPath(output.getAbsolutePath());
-//                binding.videoView.requestFocus();
-//                binding.videoView.start();
-
-
 
                 binding.surfaceview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
@@ -375,11 +361,6 @@ public class VideoFragment extends Fragment {
                 return null;
             }
 
-//                valuesvideos.clear();
-//                valuesvideos.put(MediaStore.Video.Media.IS_PENDING, 0);
-//                getActivity().getContentResolver().update(uriSavedVideo, valuesvideos, null, null);
-//                Toast.makeText(getActivity(), "Saved Successfully", Toast.LENGTH_SHORT).show();
-
 
         } else {
             File outputDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/BlurFaces/");
@@ -420,67 +401,5 @@ public class VideoFragment extends Fragment {
         }
     }
 
-//    private CascadeClassifier setupCascadeClassifier() {
-//        InputStream is = getResources().openRawResource(R.raw.haarcascade);
-//        File cascadeDir = getActivity().getDir("cascade", Context.MODE_PRIVATE);
-//        File mCascadeFile = new File(cascadeDir, "cascade.xml");
-//        FileOutputStream os = null;
-//        try {
-//            os = new FileOutputStream(mCascadeFile);
-//
-//            byte[] buffer = new byte[4096];
-//            int bytesRead;
-//            while ((bytesRead = is.read(buffer)) != -1) {
-//                os.write(buffer, 0, bytesRead);
-//            }
-//            is.close();
-//            os.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        // We can "cast" Pointer objects by instantiating a new object of the desired class.
-//        cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-//        if (cascadeClassifier == null) {
-//            System.err.println("Error loading classifier file \"" + "classifierName" + "\".");
-//            System.exit(1);
-//            Log.e(TAG, "processOpencv: Error loading file");
-//            Toast.makeText(getActivity(), "Error loading file", Toast.LENGTH_SHORT).show();
-//        }
-//        return cascadeClassifier;
-//    }
-//
-
-
-    private void initProgressDialog() {
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setMessage("Please Wait..."); // Setting Message
-        progressDialog.setTitle("Blur Faces in Video"); // Setting Title
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
-        progressDialog.show(); // Display Progress Dialog
-        progressDialog.setCancelable(false);
-
-    }
-
-
-//Use seekablebytearray
-//    @Test
-//    public void testVideoBytesEqual() {
-//        // if this test fails it might be due to indeterministic multithreaded encoding
-//        System.out.println("SeekableByteArrayOutputStreamVideo");
-//        File tempFile = new File(Loader.getTempDir(), "test.mp4");
-//        try {
-//            createVideo(new FFmpegFrameRecorder(tempFile, WIDTH, HEIGHT, 0));
-//            byte[] fileBytes = Files.readAllBytes(tempFile.toPath());
-//
-//            SeekableByteArrayOutputStream byteArrayOutputStream = new SeekableByteArrayOutputStream();
-//            createVideo(new FFmpegFrameRecorder(byteArrayOutputStream, WIDTH, HEIGHT, 0));
-//            assertArrayEquals(fileBytes, byteArrayOutputStream.toByteArray());
-//        } catch (Exception e) {
-//            fail("Exception should not have been thrown: " + e);
-//        } finally {
-//            tempFile.delete();
-//        }
-//    }
 
 }

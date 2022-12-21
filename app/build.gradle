@@ -76,14 +76,6 @@ android {
         exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/ASL2.0'
-//        pickFirst  'META-INF/native-image/android-arm/jnijavacpp/reflect-config.json'
-//        pickFirst  'META-INF/native-image/android-arm64/jnijavacpp/jni-config.json'
-//        pickFirst  'META-INF/native-image/android-arm64/jnijavacpp/reflect-config.json'
-//        pickFirst  'META-INF/native-image/android-x86_64/jnijavacpp/reflect-config.json'
-//        pickFirst  'META-INF/native-image/android-x86/jnijavacpp/jni-config.json'
-//        pickFirst  'META-INF/native-image/android-x86_64/jnijavacpp/jni-config.json'
-//        pickFirst  'META-INF/native-image/android-arm/jnijavacpp/jni-config.json'
-//        pickFirst  'META-INF/native-image/android-x86/jnijavacpp/reflect-config.json'
     }
 }
 
