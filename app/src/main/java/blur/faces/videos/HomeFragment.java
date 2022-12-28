@@ -43,6 +43,7 @@ import java.net.URL;
 
 import blur.faces.videos.databinding.FragmentHomeBinding;
 import blur.faces.videos.view_models.SharedViewModel;
+import kotlin.Suppress;
 
 
 //my options, jcodec, medi coded bytebuffer to bytebuffer, mediacodec opengl surface, javacv oropencv frame grabber
@@ -111,11 +112,17 @@ public class HomeFragment extends Fragment {
 
     private void selectVideo() {
 
-        Intent intent = new Intent();
-        intent.setType("video/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Video"), PICK_VIDEO);
 
+
+
+      Intent intent =new  Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+        intent.putExtra(Intent.EXTRA_TITLE, "Select video");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("video/*");
+                startActivityForResult(intent, PICK_VIDEO);
 
     }
 
@@ -160,7 +167,9 @@ public class HomeFragment extends Fragment {
             try {
                 InputStream inputStream = getActivity().getContentResolver().openInputStream(data.getData());
                 sharedViewModel.setSelectedVideoUri(videoUri);
-                NavHostFragment.findNavController(HomeFragment.this).navigate(R.id.videoFragment);
+                Bundle bundle = new Bundle();
+                bundle.putString("uristring", data.getData().toString());
+                NavHostFragment.findNavController(HomeFragment.this).navigate(R.id.videoFragment, bundle);
             } catch (IOException e) {
                 e.printStackTrace();
             }

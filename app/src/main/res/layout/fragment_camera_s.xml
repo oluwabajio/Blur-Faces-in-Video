@@ -9,14 +9,7 @@
     tools:context=".CameraSFragment">
 
 
-    <blur.faces.videos.utils.CvCameraPreview
-        android:id="@+id/camera_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        app:camera_type="front"
-        android:visibility="gone"
-        app:scale_type="full" />
+
 
     <RelativeLayout
         android:id="@+id/lyCameraView"

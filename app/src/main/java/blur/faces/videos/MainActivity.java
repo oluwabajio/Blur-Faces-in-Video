@@ -37,7 +37,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import org.bytedeco.javacpp.Loader;
+import org.opencv.android.OpenCVLoader;
 
 //import org.opencv.android.OpenCVLoader;
 
@@ -47,13 +47,13 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private static final String TAG = "MainActivity";
 
-//    static {
-//        if (OpenCVLoader.initDebug()) {
-//            Log.e(TAG, "OpenCV initialize success");
-//        } else {
-//            Log.e(TAG, "OpenCV initialize failed");
-//        }
-//    }
+    static {
+        if (OpenCVLoader.initDebug()) {
+            Log.e(TAG, "OpenCV initialize success");
+        } else {
+            Log.e(TAG, "OpenCV initialize failed");
+        }
+    }
 
 
     private int PERMISSION_REQUEST_CODE = 333;
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        Loader.load(org.bytedeco.opencv.opencv_java.class);
+
 
 
 
@@ -80,40 +80,6 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
 
-//        if (!checkPermission()) {
-//            requestPermission();
-//        }
-
-
-    }
-
-
-    private boolean checkPermission() {
-        if (SDK_INT >= Build.VERSION_CODES.R) {
-            return Environment.isExternalStorageManager();
-        } else {
-            int result = ContextCompat.checkSelfPermission(MainActivity.this, READ_EXTERNAL_STORAGE);
-            int result1 = ContextCompat.checkSelfPermission(MainActivity.this, WRITE_EXTERNAL_STORAGE);
-            return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED;
-        }
-    }
-
-    private void requestPermission() {
-        if (SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                intent.addCategory("android.intent.category.DEFAULT");
-                intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
-                startActivityForResult(intent, 2296);
-            } catch (Exception e) {
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                startActivityForResult(intent, 2296);
-            }
-        } else {
-            //below android 11
-            ActivityCompat.requestPermissions(this, new String[]{WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
-        }
     }
 
     @Override
@@ -157,23 +123,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initProgressDialog() {
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Please Wait..."); // Setting Message
-        progressDialog.setTitle("Blur Faces in Video"); // Setting Title
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
-        progressDialog.show(); // Display Progress Dialog
-        progressDialog.setCancelable(false);
-
-    }
-
-    private void dismissProgressDialog() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                dismissLoadingDialog();
-            }
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        if (!OpenCVLoader.initDebug())
+//            Log.e("OpenCV", "Unable to load OpenCV!");
+//        else
+//            Log.d("OpenCV", "OpenCV loaded Successfully!");
     }
 
     private void dismissLoadingDialog() {
